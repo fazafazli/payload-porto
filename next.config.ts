@@ -17,13 +17,24 @@
 
 // export default nextConfig;
 
+// import type { NextConfig } from "next";
+
+// const nextConfig: NextConfig = {
+//   reactCompiler: true,
+//   experimental: {
+//     turbopack: false,
+//   },
+// };
+
+// export default nextConfig;
+
 import type { NextConfig } from "next";
+import { withPayload } from "@payloadcms/next/withPayload";
 
 const nextConfig: NextConfig = {
-  reactCompiler: true,
   experimental: {
-    turbopack: false,
   },
+  // Remove reactCompiler from root level
 };
 
-export default nextConfig;
+export default withPayload(nextConfig);
