@@ -30,7 +30,11 @@ export default buildConfig({
         media: {
           prefix: "custom-prefix",
           signedDownloads: {
-            shouldUseSignedURL: ({ filename }) => {
+            shouldUseSignedURL: ({ collection, filename, req }: { 
+              collection: string; 
+              filename: string; 
+              req: any 
+            }) => {
               return filename.endsWith(".mp4");
             },
           },
