@@ -5,6 +5,15 @@ import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { buildConfig } from "payload";
 
 export default buildConfig({
+  serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000',
+  cors: [
+    'https://portfolio-kappa-lilac-67.vercel.app',
+    'http://localhost:3001', // for local development
+  ],
+  csrf: [
+    'https://portfolio-kappa-lilac-67.vercel.app',
+    'http://localhost:3001',
+  ],
   // If you'd like to use Rich Text, pass your editor here
   editor: lexicalEditor(),
 
@@ -30,7 +39,7 @@ export default buildConfig({
         media: {
           prefix: "custom-prefix",
           signedDownloads: {
-            shouldUseSignedURL: ({ collection, filename, req }: { 
+            shouldUseSignedURL: ({ filename }: { 
               collection: string; 
               filename: string; 
               req: any 
