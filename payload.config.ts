@@ -7,46 +7,159 @@ import { buildConfig } from "payload";
 export default buildConfig({
   serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000',
   cors: [
-    'https://portfolio-kappa-lilac-67.vercel.app',
-    'http://localhost:3001', // for local development
+    'http://localhost:3000',
+    'http://localhost:3001', // local development
   ],
   csrf: [
-    'https://portfolio-kappa-lilac-67.vercel.app',
+    'http://localhost:3000',
     'http://localhost:3001',
   ],
-  // If you'd like to use Rich Text, pass your editor here
   editor: lexicalEditor(),
 
-  // Define and configure your collections in this array
-  collections: [],
+  collections: [
+    {
+      slug: 'users',
+      auth: true,
+      admin: {
+        useAsTitle: 'email',
+      },
+      fields: [
+        {
+          name: 'email',
+          type: 'email',
+          required: true,
+          unique: true,
+        },
+      ],
+    },
+    {
+      slug: 'posts',
+      admin: {
+        useAsTitle: 'title',
+      },
+      fields: [
+        {
+          name: 'title',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'content',
+          type: 'richText',
+          required: true,
+        },
+      ],
+    },
+    {
+      slug: 'projects',
+      admin: {
+        useAsTitle: 'title',
+      },
+      access: {
+        read: () => true,
+        create: ({ req }) => (req.user ? true : false),
+        update: ({ req }) => (req.user ? true : false),
+        delete: ({ req }) => (req.user ? true : false),
+      },
+      fields: [
+        {
+          name: 'title',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'slug',
+          type: 'text',
+          required: true,
+          unique: true,
+          admin: {
+            position: 'sidebar',
+          },
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          required: true,
+        },
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          required: false,
+        },
+        {
+          name: 'technologies',
+          type: 'array',
+          fields: [
+            {
+              name: 'tech',
+              type: 'text',
+            },
+          ],
+        },
+        {
+          name: 'liveUrl',
+          type: 'text',
+          label: 'Live URL',
+        },
+        {
+          name: 'github',
+          type: 'text',
+          label: 'GitHub URL',
+        },
+        {
+          name: 'featured',
+          type: 'checkbox',
+          defaultValue: false,
+        },
+        {
+          name: 'order',
+          type: 'number',
+          defaultValue: 0,
+        },
+      ],
+      timestamps: true,
+    },
+    {
+      slug: 'media',
+      upload: true,
+      access: {
+        read: () => true,
+        create: ({ req }) => (req.user ? true : false),
+        update: ({ req }) => (req.user ? true : false),
+        delete: ({ req }) => (req.user ? true : false),
+      },
+      fields: [
+        {
+          name: 'alt',
+          type: 'text',
+          required: false,
+        },
+        {
+          name: 'caption',
+          type: 'text',
+        },
+      ],
+    },
+  ],
 
-  // Payload Secret
   secret: process.env.PAYLOAD_SECRET || "",
-  // Untuk koneksi ke Database
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL,
       ssl: {
-        rejectUnauthorized: true,
+        rejectUnauthorized: false,
         ca: process.env.SSL_CA,
       },
     },
   }),
   plugins: [
-    // Untuk koneksi ke Amazon S3
     s3Storage({
       collections: {
         media: {
-          prefix: "custom-prefix",
-          signedDownloads: {
-            shouldUseSignedURL: ({ filename }: { 
-              collection: string; 
-              filename: string; 
-              req: any 
-            }) => {
-              return filename.endsWith(".mp4");
-            },
-          },
+          prefix: "media",
+          signedDownloads: false,
+          disableLocalStorage: true,
         },
       },
       config: {
@@ -56,7 +169,6 @@ export default buildConfig({
           secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
         },
         region: process.env.S3_REGION,
-        // Opsi ini penting agar URL yang dihasilkan oleh Payload benar
         forcePathStyle: true,
       },
       bucket: process.env.S3_BUCKET!,
